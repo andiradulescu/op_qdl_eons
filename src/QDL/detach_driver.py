@@ -10,7 +10,8 @@ class usb_class:
     self.portconfig = portconfig
     self.device = None
     if sys.platform.startswith('freebsd') or sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
-      self.backend = usb.backend.libusb1.get_backend(find_library=lambda x: "libusb-1.0.so")
+      self.backend = usb.backend.libusb1.get_backend(find_library=lambda x: "libusb-1.0.0.dylib")
+      print("setting backend")
     else:
       print("Only support Unix-based machine")
       sys.exit(1)
@@ -20,6 +21,9 @@ class usb_class:
         self.backend.lib.libusb_set_option(self.backend.ctx, 1)
       except:
         self.backend = None
+        print("Backend None")
+    else:
+      print("No backend")
 
   def detach_driver(self):
     devices = usb.core.find(find_all=True, backend=self.backend)
@@ -27,6 +31,7 @@ class usb_class:
       for usbid in self.portconfig:
         if d.idProduct == usbid[1] and d.idVendor == usbid[0]:
           self.device = d
+          print("Found device " + str(d))
           break
       if self.device is not None:
         break
@@ -49,6 +54,8 @@ class usb_class:
         print("Detaching kernel driver...")
         self.device.detach_kernel_driver(0)
         print("Finish detaching kernel driver")
+      else:
+        print("Kernel driver not active?")
     except Exception as err:
       print("No kernel driver supported: " + str(err))
     return False
