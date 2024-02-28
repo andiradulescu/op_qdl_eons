@@ -139,7 +139,7 @@ export class qdlDevice {
     }
   }
 
-  
+
   async getActiveSlot() {
     if (this.mode !== "firehose") {
       console.error("Please try again, must be in command mode to get active slot")
@@ -152,10 +152,13 @@ export class qdlDevice {
       let [ data, guidGpt ] = await this.firehose.getGpt(lun, gptNumPartEntries, gptPartEntrySize, gptPartEntryStartLba);
       if (guidGpt === null)
         return "";
+
+      console.log(guidGpt.toString());
+
       for (const partitionName in guidGpt.partentries) {
-        let slot = partitionName.slice(-2);
-        let partition = guidGpt.partentries[partitionName];
-        let active = ((partition.flags >> (AB_FLAG_OFFSET*8))&0xff) & AB_PARTITION_ATTR_SLOT_ACTIVE == AB_PARTITION_ATTR_SLOT_ACTIVE; 
+        const slot = partitionName.slice(-2);
+        const partition = guidGpt.partentries[partitionName];
+        const active = (((BigInt(partition.flags) >> (BigInt(AB_FLAG_OFFSET) * BigInt(8))) & BigInt(0xFF)) & BigInt(AB_PARTITION_ATTR_SLOT_ACTIVE)) === BigInt(AB_PARTITION_ATTR_SLOT_ACTIVE);
         if (slot == "_a") {
           console.log(`Active state for ${partitionName}: ${active}`)
           if (active)

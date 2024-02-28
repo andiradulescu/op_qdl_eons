@@ -154,7 +154,7 @@ class gptPartition {
     this.flags = sh.qword();
     this.name = sh.toString(72);
   }
-  
+
 
   create() {
     let buffer = new ArrayBuffer(16 + 16 + 8 + 8 + 8 + 72);
@@ -195,7 +195,7 @@ class partf {
 export class gpt {
   constructor(numPartEntries=0, partEntrySize=0, partEntryStartLba=0) {
     this.numPartEntries     = numPartEntries;
-    this.partEntrySize      = partEntrySize; 
+    this.partEntrySize      = partEntrySize;
     this.partEntryStartLba  = partEntryStartLba;
     this.totalSectors       = null;
     this.header             = null;
@@ -275,7 +275,21 @@ export class gpt {
     this.totalsectors = this.header.first_usable_lba + this.header.last_usable_lba;
     return true;
   }
-  
+
+  toString() {
+    let mstr = "\nGPT Table:\n-------------\n";
+    for (const partitionName in this.partentries) {
+      const partition = this.partentries[partitionName];
+      const active = (((BigInt(partition.flags) >> (BigInt(AB_FLAG_OFFSET) * BigInt(8))) & BigInt(0xFF)) & BigInt(AB_PARTITION_ATTR_SLOT_ACTIVE)) === BigInt(AB_PARTITION_ATTR_SLOT_ACTIVE);
+      mstr += (`${partitionName.padEnd(20)} Offset 0x${(partition.sector * this.sectorSize).toString(16).padStart(16, '0')}, ` +
+               `Length 0x${(partition.sectors * this.sectorSize).toString(16).padStart(16, '0')}, ` +
+               `Flags 0x${partition.flags.toString(16).padStart(16, '0')}, UUID ${partition.unique}, ` +
+               `Type ${partition.type}, Active ${active}\n`);
+    }
+    mstr += (`\nTotal disk size:0x${(this.totalsectors * this.sectorSize).toString(16).padStart(16, '0')}, ` +
+             `sectors:0x${this.totalsectors.toString(16).padStart(16, '0')}\n`);
+    return mstr;
+  }
 
   patch(data, partitionName="boot", active=true) {
     for (const sectorSize of [512, 4096]) {

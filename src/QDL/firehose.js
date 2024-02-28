@@ -93,7 +93,7 @@ export class Firehose {
           let log = this.xml.getLog(rData);
           return new response(status, rData, "", log)
         }
-      } else { 
+      } else {
         if (status) {
           if (containsBytes("log value=", rData)) {
             let log = this.xml.getLog(rData);
@@ -255,7 +255,7 @@ export class Firehose {
         if (gptSize % this.cfg.SECTOR_SIZE_IN_BYTES != 0)
           sectors += 1;
         if (sectors === 0)
-          sectors = 64;
+          return [null, null];
         if (sectors > 64)
           sectors = 64;
 
@@ -300,7 +300,7 @@ export class Firehose {
       const info  = this.xml.getLog(wd);
       rsp         = this.xml.getReponse(wd);
 
-      if (rsp.hasOwnProperty("value")) { 
+      if (rsp.hasOwnProperty("value")) {
         if (rsp["value"] !== "ACK") {
           return new response(false, resData, info);
         } else if (rsp.hasOwnProperty("rawmode")) {
@@ -363,7 +363,7 @@ export class Firehose {
     let offset  = 0;
 
     if (rsp.resp) {
-      while (bytesToWrite > 0) { 
+      while (bytesToWrite > 0) {
         let wlen = Math.min(bytesToWrite, this.cfg.MaxPayloadSizeFromTargetInBytes);
         let wdata;
 
@@ -509,7 +509,7 @@ export class Firehose {
     return true;
   }
 
-  
+
   async cmdReset() {
     let data  = "<?xml version=\"1.0\" ?><data><power value=\"reset\"/></data>";
     let val   = await this.xmlSend(data);
